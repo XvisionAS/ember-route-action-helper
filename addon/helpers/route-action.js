@@ -3,7 +3,7 @@ import Helper from '@ember/component/helper';
 import { get, computed } from '@ember/object';
 import { getOwner } from '@ember/application';
 import { run } from '@ember/runloop';
-import { runInDebug, assert } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { ACTION } from '../-private/internals';
 
 function getCurrentHandlerInfos(router) {
@@ -18,16 +18,17 @@ function getRoutes(router) {
     .reverse();
 }
 
-function getRouteWithAction(router, actionName) {
-  let action;
-  let handler = emberArray(getRoutes(router)).find((route) => {
-    let actions = route.actions || route._actions;
-    action = actions[actionName];
-
-    return typeof(action) === 'function';
-  });
-
-  return { action, handler };
+function getRouteWithAction(router, actionName, startIndex = 0) {
+  const routes = emberArray(getRoutes(router))
+  for (let index = startIndex; index < routes.length; ++index) {
+    const route = routes[index]
+    const actions = route.actions || route._actions;
+    const action = actions[actionName];
+    if (typeof(action) === 'function') {
+      return {action, handler:route, nextIndex:index + 1}
+    }
+  }
+  return {handler:undefined, action:undefined}
 }
 
 export default Helper.extend({
@@ -36,18 +37,25 @@ export default Helper.extend({
   }).readOnly(),
 
   compute([actionName, ...params]) {
-    let router = get(this, 'router');
+    const router = get(this, 'router');
     assert('[ember-route-action-helper] Unable to lookup router', router);
 
-    runInDebug(() => {
-      let { handler } = getRouteWithAction(router, actionName);
-      assert(`[ember-route-action-helper] Unable to find action ${actionName}`, handler);
-    });
-
-    let routeAction = function(...invocationArgs) {
-      let { action, handler } = getRouteWithAction(router, actionName);
-      let args = params.concat(invocationArgs);
-      return run.join(handler, action, ...args);
+    let startIndex = 0
+    const routeAction = function(...invocationArgs) {
+      let cont = true
+      while (cont) {
+        const { action, handler, nextIndex} = getRouteWithAction(router, actionName, startIndex);
+        if (!handler) {
+          assert(`[ember-route-action-helper] Unable to find action ${actionName}`, handler);
+          break;
+        }
+        const args = params.concat(invocationArgs);
+        const ret  = run.join(handler, action, ...args);
+        if (ret !== true) {
+          return ret;
+        }
+        startIndex = nextIndex;
+      }
     };
 
     routeAction[ACTION] = true;
