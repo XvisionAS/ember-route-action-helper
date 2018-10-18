@@ -3,7 +3,7 @@ import Helper from '@ember/component/helper';
 import { get, computed } from '@ember/object';
 import { getOwner } from '@ember/application';
 import { run } from '@ember/runloop';
-import { assert } from '@ember/debug';
+import { runInDebug, assert } from '@ember/debug';
 import { ACTION } from '../-private/internals';
 
 function getCurrentHandlerInfos(router) {
@@ -46,7 +46,9 @@ export default Helper.extend({
       while (cont) {
         const { action, handler, nextIndex} = getRouteWithAction(router, actionName, startIndex);
         if (!handler) {
-          assert(`[ember-route-action-helper] Unable to find action ${actionName}`, handler);
+          runInDebug( () => {
+            console.warn(`[ember-route-action-helper] Unable to find action ${actionName}`);
+          })          
           break;
         }
         const args = params.concat(invocationArgs);
