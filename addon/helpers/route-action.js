@@ -40,19 +40,22 @@ export default Helper.extend({
     const router = get(this, 'router');
     assert('[ember-route-action-helper] Unable to lookup router', router);
 
-    let startIndex = 0
     const routeAction = function(...invocationArgs) {
-      let cont = true
+      let startIndex = 0
+      let cont       = true
       while (cont) {
         const { action, handler, nextIndex} = getRouteWithAction(router, actionName, startIndex);
+
         if (!handler) {
           runInDebug( () => {
             console.warn(`[ember-route-action-helper] Unable to find action ${actionName}`);
-          })          
+          })
           break;
         }
+
         const args = params.concat(invocationArgs);
         const ret  = run.join(handler, action, ...args);
+
         if (ret !== true) {
           return ret;
         }
