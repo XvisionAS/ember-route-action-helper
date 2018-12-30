@@ -6,14 +6,13 @@ import { run } from '@ember/runloop';
 import { runInDebug, assert } from '@ember/debug';
 import { ACTION } from '../-private/internals';
 
-function getCurrentHandlerInfos(router) {
-  let routerLib = router._routerMicrolib || router.router;
-
-  return routerLib.currentHandlerInfos;
+function getCurrentRouteInfos(router) {
+  const routerLib = router._routerMicrolib || router.router;
+  return routerLib.currentRouteInfos || routerLib.currentHandlerInfos;
 }
 
 function getRoutes(router) {
-  return emberArray(getCurrentHandlerInfos(router))
+  return emberArray(getCurrentRouteInfos(router))
     .mapBy('handler')
     .reverse();
 }
