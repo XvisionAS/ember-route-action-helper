@@ -12,9 +12,7 @@ function getCurrentRouteInfos(router) {
 }
 
 function getRoutes(router) {
-  return emberArray(getCurrentRouteInfos(router))
-    .mapBy('handler')
-    .reverse();
+  return emberArray(getCurrentRouteInfos(router)).reverse();
 }
 
 function getRouteWithAction(router, actionName, startIndex = 0) {
