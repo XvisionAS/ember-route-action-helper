@@ -1,26 +1,26 @@
-import { A as emberArray } from '@ember/array';
-import Helper from '@ember/component/helper';
-import { get, computed } from '@ember/object';
-import { getOwner } from '@ember/application';
-import { run } from '@ember/runloop';
-import { runInDebug, assert } from '@ember/debug';
-import { ACTION } from '../-private/internals';
+import { A as emberArray } from '@ember/array'
+import Helper from '@ember/component/helper'
+import { get, computed } from '@ember/object'
+import { getOwner } from '@ember/application'
+import { run } from '@ember/runloop'
+import { runInDebug, assert } from '@ember/debug'
+import { ACTION } from '../-private/internals'
 
 function getCurrentRouteInfos(router) {
-  const routerLib = router._routerMicrolib || router.router;
-  return routerLib.currentRouteInfos || routerLib.currentHandlerInfos;
+  const routerLib = router._routerMicrolib || router.router
+  return routerLib.currentRouteInfos || routerLib.currentHandlerInfos
 }
 
-function getRoutes(router) {
-  return emberArray(getCurrentRouteInfos(router)).reverse();
+function getRouteInfos(router) {
+  return emberArray(getCurrentRouteInfos(router)).reverse()
 }
 
 function getRouteWithAction(router, actionName, startIndex = 0) {
-  const routes = emberArray(getRoutes(router))
-  for (let index = startIndex; index < routes.length; ++index) {
-    const route = routes[index]
-    const actions = route.actions || route._actions;
-    const action = actions[actionName];
+  const routeInfos = getRouteInfos(router)
+  for (let index = startIndex index < routeInfos.length ++index) {
+    const route = routeInfos[index].route
+    const actions = route.actions || route._actions
+    const action = actions[actionName]
     if (typeof(action) === 'function') {
       return {action, handler:route, nextIndex:index + 1}
     }
@@ -30,38 +30,38 @@ function getRouteWithAction(router, actionName, startIndex = 0) {
 
 export default Helper.extend({
   router: computed(function() {
-    return getOwner(this).lookup('router:main');
-  }).readOnly(),
+    return getOwner(this).lookup('router:main')
+  }).readOnly()
 
   compute([actionName, ...params]) {
-    const router = get(this, 'router');
-    assert('[ember-route-action-helper] Unable to lookup router', router);
+    const router = get(this, 'router')
+    assert('[ember-route-action-helper] Unable to lookup router', router)
 
     const routeAction = function(...invocationArgs) {
       let startIndex = 0
       let cont       = true
       while (cont) {
-        const { action, handler, nextIndex} = getRouteWithAction(router, actionName, startIndex);
+        const { action, handler, nextIndex} = getRouteWithAction(router, actionName, startIndex)
 
         if (!handler) {
           runInDebug( () => {
-            console.warn(`[ember-route-action-helper] Unable to find action ${actionName}`);
+            console.warn(`[ember-route-action-helper] Unable to find action ${actionName}`)
           })
-          break;
+          break
         }
 
-        const args = params.concat(invocationArgs);
-        const ret  = run.join(handler, action, ...args);
+        const args = params.concat(invocationArgs)
+        const ret  = run.join(handler, action, ...args)
 
         if (ret !== true) {
-          return ret;
+          return ret
         }
-        startIndex = nextIndex;
+        startIndex = nextIndex
       }
-    };
+    }
 
-    routeAction[ACTION] = true;
+    routeAction[ACTION] = true
 
-    return routeAction;
+    return routeAction
   }
-});
+})
