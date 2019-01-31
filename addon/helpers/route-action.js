@@ -17,7 +17,7 @@ function getRouteInfos(router) {
 
 function getRouteWithAction(router, actionName, startIndex = 0) {
   const routeInfos = getRouteInfos(router)
-  for (let index = startIndex index < routeInfos.length ++index) {
+  for (let index = startIndex; index < routeInfos.length; ++index) {
     const route = routeInfos[index].route
     const actions = route.actions || route._actions
     const action = actions[actionName]
