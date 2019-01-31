@@ -31,7 +31,7 @@ function getRouteWithAction(router, actionName, startIndex = 0) {
 export default Helper.extend({
   router: computed(function() {
     return getOwner(this).lookup('router:main')
-  }).readOnly()
+  }).readOnly(),
 
   compute([actionName, ...params]) {
     const router = get(this, 'router')
