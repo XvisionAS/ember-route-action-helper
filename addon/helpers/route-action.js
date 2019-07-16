@@ -1,4 +1,3 @@
-import { A as emberArray } from '@ember/array'
 import Helper from '@ember/component/helper'
 import { get, computed } from '@ember/object'
 import { getOwner } from '@ember/application'
@@ -12,7 +11,7 @@ function getCurrentRouteInfos(router) {
 }
 
 function getRouteInfos(router) {
-  return emberArray(getCurrentRouteInfos(router)).reverse()
+  return getCurrentRouteInfos(router).toArray().reverse()
 }
 
 function getRouteWithAction(router, actionName, startIndex = 0) {
